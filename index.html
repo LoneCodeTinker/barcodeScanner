@@ -3,16 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Search Demo</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
-    <script src="https://unpkg.com/@zxing/browser"></script>
-    <script src="https://unpkg.com/@zxing/browser@latest"></script>
-    <script type="module">
-        import { BrowserBarcodeReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm';
-    
-        window.ZXing = { BrowserBarcodeReader };
-    </script>
-    
+    <title>Barcode Search Demo</title>   
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
     <style>
         #barcodeScanner { width: 100%; max-width: 400px; display: none; }
     </style>
@@ -21,10 +13,8 @@
     <h2>Barcode Search Demo</h2>
     
     <input type="text" id="searchBox" placeholder="Search or scan..." autofocus>
-    <button onclick="startScanner()">Scan Barcode</button>
-    <video id="barcodeScanner"></video>
-    <button onclick="startZXingScanner()">Scan Barcode with ZXing</button>
-    <video id="barcodeScanner" style="width: 100%; max-width: 400px; display: none;"></video>
+    <button onclick="startZXingScanner()">Scan Barcode</button>
+    <video id="barcodeScanner" style="width: 100%; max-width: 400px; display: none;"></video> 
 
     <ul id="itemList"></ul>
     
@@ -53,40 +43,6 @@
             });
         }
 
-        function startScanner() {
-            let scannerElement = document.getElementById("barcodeScanner");
-            scannerElement.style.display = "block";
-
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: scannerElement,
-                    constraints: {
-                        width: { min: 640, ideal: 1280, max: 1920 },
-                        height: { min: 480, ideal: 720, max: 1080 },
-                        facingMode: "environment" // Forces back camera
-                    }
-                },
-                locator: { patchSize: "medium", halfSample: true },
-                decoder: { readers: ["ean_reader", "code_128_reader"] }
-            }, function(err) {
-                if (!err) {
-                    Quagga.start();
-                } else {
-                    console.error("Quagga initialization failed: ", err);
-                }
-            });
-
-            Quagga.onDetected(function(result) {
-                let barcode = result.codeResult.code;
-                document.getElementById("searchBox").value = barcode;
-                Quagga.stop();
-                scannerElement.style.display = "none";
-                filterItems();
-            });
-        }
-
         function startZXingScanner() {
             let scannerElement = document.getElementById("barcodeScanner");
             scannerElement.style.display = "block";
@@ -97,12 +53,13 @@
                 return;
             }
 
-            const codeReader = new ZXing.BrowserBarcodeReader();
+            const codeReader = new ZXing.BrowserMultiFormatReader();
 
-            // Request camera access
-            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-                .then(() => {
-                    codeReader.decodeFromVideoDevice(undefined, scannerElement, (result, err) => {
+            codeReader.getVideoInputDevices().then(videoInputDevices => {
+                if (videoInputDevices.length > 0) {
+                    const backCamera = videoInputDevices[videoInputDevices.length - 1].deviceId; // Use back camera
+
+                    codeReader.decodeFromVideoDevice(backCamera, scannerElement, (result, err) => {
                         if (result) {
                             document.getElementById("searchBox").value = result.text;
                             scannerElement.style.display = "none";
@@ -110,13 +67,15 @@
                             filterItems();
                         }
                     });
-                })
-                .catch(err => {
-                    console.error("Camera access denied: ", err);
+                } else {
+                    console.error("No video devices found.");
                     scannerElement.style.display = "none";
-                });
+                }
+            }).catch(err => {
+                console.error("Camera access error: ", err);
+                scannerElement.style.display = "none";
+            });
         }
-
 
     </script>
 </body>
