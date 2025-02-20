@@ -6,6 +6,7 @@
     <title>Barcode Search Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://unpkg.com/@zxing/browser"></script>
+    <script src="https://unpkg.com/@zxing/browser@latest"></script>
     <script type="module">
         import { BrowserBarcodeReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm';
     
@@ -86,37 +87,36 @@
             });
         }
 
-/*         async function startZXingScanner() {
+        function startZXingScanner() {
             let scannerElement = document.getElementById("barcodeScanner");
             scannerElement.style.display = "block";
 
-            const codeReader = new ZXing.BrowserBarcodeReader();
-            
-            try {
-                const result = await codeReader.decodeOnceFromVideoDevice(undefined, scannerElement);
-                document.getElementById("searchBox").value = result.text;
-                scannerElement.style.display = "none";
-                filterItems();
-            } catch (err) {
-                console.error("Barcode scanning failed: ", err);
+            // Check if ZXing is loaded
+            if (typeof ZXing === "undefined") {
+                console.error("ZXing is not loaded. Check script import.");
+                return;
             }
-        } */
-        async function startZXingScanner() {
-            let scannerElement = document.getElementById("barcodeScanner");
-            scannerElement.style.display = "block";
 
             const codeReader = new ZXing.BrowserBarcodeReader();
-            
-            try {
-                const result = await codeReader.decodeOnceFromVideoDevice(undefined, scannerElement);
-                document.getElementById("searchBox").value = result.text;
-                scannerElement.style.display = "none";
-                filterItems();
-            } catch (err) {
-                console.error("Barcode scanning failed: ", err);
-                scannerElement.style.display = "none";
-            }
+
+            // Request camera access
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+                .then(() => {
+                    codeReader.decodeFromVideoDevice(undefined, scannerElement, (result, err) => {
+                        if (result) {
+                            document.getElementById("searchBox").value = result.text;
+                            scannerElement.style.display = "none";
+                            codeReader.reset();
+                            filterItems();
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error("Camera access denied: ", err);
+                    scannerElement.style.display = "none";
+                });
         }
+
 
     </script>
 </body>
