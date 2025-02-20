@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Barcode Search Demo</title>   
-    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest"></script>
+    <script src="https://unpkg.com/@zxing/library@latest"></script>
     <style>
         #barcodeScanner { width: 100%; max-width: 400px; display: none; }
     </style>
@@ -47,7 +47,7 @@
             let scannerElement = document.getElementById("barcodeScanner");
             scannerElement.style.display = "block";
 
-            // Check if ZXing is loaded
+            // Ensure ZXing is loaded
             if (typeof ZXing === "undefined") {
                 console.error("ZXing is not loaded. Check script import.");
                 return;
@@ -55,9 +55,11 @@
 
             const codeReader = new ZXing.BrowserMultiFormatReader();
 
+            // Get available video input devices
             codeReader.getVideoInputDevices().then(videoInputDevices => {
                 if (videoInputDevices.length > 0) {
-                    const backCamera = videoInputDevices[videoInputDevices.length - 1].deviceId; // Use back camera
+                    const backCamera = videoInputDevices.find(device => device.label.toLowerCase().includes('back'))
+                        ?.deviceId || videoInputDevices[0].deviceId; // Prioritize back camera if available
 
                     codeReader.decodeFromVideoDevice(backCamera, scannerElement, (result, err) => {
                         if (result) {
@@ -76,6 +78,7 @@
                 scannerElement.style.display = "none";
             });
         }
+
 
     </script>
 </body>
