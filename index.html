@@ -6,6 +6,12 @@
     <title>Barcode Search Demo</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <script src="https://unpkg.com/@zxing/browser"></script>
+    <script type="module">
+        import { BrowserBarcodeReader } from 'https://cdn.jsdelivr.net/npm/@zxing/browser@latest/+esm';
+    
+        window.ZXing = { BrowserBarcodeReader };
+    </script>
+    
     <style>
         #barcodeScanner { width: 100%; max-width: 400px; display: none; }
     </style>
