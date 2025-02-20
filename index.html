@@ -43,28 +43,39 @@
         }
 
         function startScanner() {
-            document.getElementById("barcodeScanner").style.display = "block";
-            Quagga.init({
-                inputStream: {
-                    name: "Live",
-                    type: "LiveStream",
-                    target: document.querySelector("#barcodeScanner"),
-                },
-                decoder: {
-                    readers: ["ean_reader", "code_128_reader"]
-                }
-            }, function(err) {
-                if (!err) Quagga.start();
-            });
+    let scannerElement = document.getElementById("barcodeScanner");
+    scannerElement.style.display = "block";
 
-            Quagga.onDetected(function(result) {
-                let barcode = result.codeResult.code;
-                document.getElementById("searchBox").value = barcode;
-                Quagga.stop();
-                document.getElementById("barcodeScanner").style.display = "none";
-                filterItems();
-            });
+    Quagga.init({
+        inputStream: {
+            name: "Live",
+            type: "LiveStream",
+            target: scannerElement,
+            constraints: {
+                width: { min: 640, ideal: 1280, max: 1920 },
+                height: { min: 480, ideal: 720, max: 1080 },
+                facingMode: "environment" // Forces back camera
+            }
+        },
+        locator: { patchSize: "medium", halfSample: true },
+        decoder: { readers: ["ean_reader", "code_128_reader"] }
+    }, function(err) {
+        if (!err) {
+            Quagga.start();
+        } else {
+            console.error("Quagga initialization failed: ", err);
         }
+    });
+
+    Quagga.onDetected(function(result) {
+        let barcode = result.codeResult.code;
+        document.getElementById("searchBox").value = barcode;
+        Quagga.stop();
+        scannerElement.style.display = "none";
+        filterItems();
+    });
+}
+
     </script>
 </body>
 </html>
