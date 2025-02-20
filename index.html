@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Search Demo</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        #barcodeScanner { width: 100%; max-width: 400px; display: none; }
+    </style>
+</head>
+<body>
+    <h2>Barcode Search Demo</h2>
+    
+    <input type="text" id="searchBox" placeholder="Search or scan..." autofocus>
+    <button onclick="startScanner()">Scan Barcode</button>
+    <video id="barcodeScanner"></video>
+    <ul id="itemList"></ul>
+    
+    <script>
+        let items = [
+            { name: "Item A", code: "123456" },
+            { name: "Item B", code: "789012" },
+            { name: "Item C", code: "345678" }
+        ];
+        
+        document.getElementById("searchBox").addEventListener("input", filterItems);
+        document.getElementById("searchBox").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") filterItems();
+        });
+
+        function filterItems() {
+            let query = document.getElementById("searchBox").value.toLowerCase();
+            let filtered = items.filter(item => item.name.toLowerCase().includes(query) || item.code.includes(query));
+            
+            let list = document.getElementById("itemList");
+            list.innerHTML = "";
+            filtered.forEach(item => {
+                let li = document.createElement("li");
+                li.textContent = `${item.name} (${item.code})`;
+                list.appendChild(li);
+            });
+        }
+
+        function startScanner() {
+            document.getElementById("barcodeScanner").style.display = "block";
+            Quagga.init({
+                inputStream: {
+                    name: "Live",
+                    type: "LiveStream",
+                    target: document.querySelector("#barcodeScanner"),
+                },
+                decoder: {
+                    readers: ["ean_reader", "code_128_reader"]
+                }
+            }, function(err) {
+                if (!err) Quagga.start();
+            });
+
+            Quagga.onDetected(function(result) {
+                let barcode = result.codeResult.code;
+                document.getElementById("searchBox").value = barcode;
+                Quagga.stop();
+                document.getElementById("barcodeScanner").style.display = "none";
+                filterItems();
+            });
+        }
+    </script>
+</body>
+</html>
