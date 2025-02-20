@@ -86,6 +86,21 @@
             });
         }
 
+/*         async function startZXingScanner() {
+            let scannerElement = document.getElementById("barcodeScanner");
+            scannerElement.style.display = "block";
+
+            const codeReader = new ZXing.BrowserBarcodeReader();
+            
+            try {
+                const result = await codeReader.decodeOnceFromVideoDevice(undefined, scannerElement);
+                document.getElementById("searchBox").value = result.text;
+                scannerElement.style.display = "none";
+                filterItems();
+            } catch (err) {
+                console.error("Barcode scanning failed: ", err);
+            }
+        } */
         async function startZXingScanner() {
             let scannerElement = document.getElementById("barcodeScanner");
             scannerElement.style.display = "block";
@@ -99,6 +114,7 @@
                 filterItems();
             } catch (err) {
                 console.error("Barcode scanning failed: ", err);
+                scannerElement.style.display = "none";
             }
         }
 
